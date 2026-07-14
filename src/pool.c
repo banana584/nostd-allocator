@@ -1,22 +1,25 @@
 #include "../include/pool.h"
 #include "impls/pool_impl.h"
 
-pool pool_create(alloc_backend backend, const size_t block_size, const size_t num_blocks) {
-    pool pool = { .backend = backend, .block_size = MIN(block_size, sizeof(pool_node)), .num_blocks = num_blocks };
-    pool.mem = backend.alloc(pool.block_size * num_blocks);
-    if (!pool.mem) {
-        pool.block_size = 0;
-        pool.num_blocks = 0;
+pool* pool_create(alloc_backend backend, const size_t block_size, const size_t num_blocks) {
+    pool* pool = backend.alloc(sizeof(pool));
+    pool->backend = backend;
+    pool->block_size = MIN(block_size, sizeof(pool_node));
+    pool->num_blocks = num_blocks;
+    pool->mem = backend.alloc(pool->block_size * num_blocks);
+    if (!pool->mem) {
+        pool->block_size = 0;
+        pool->num_blocks = 0;
         return pool;
     }
 
     pool_node* prev = NULL;
-    pool_node* cur = (pool_node*)pool.mem;
+    pool_node* cur = (pool_node*)pool->mem;
     for (size_t i = 0; i < num_blocks; i++) {
         cur->prev = prev;
         if (prev) prev->next = cur;
 
-        cur = (pool_node*)((char*)cur + pool.block_size);
+        cur = (pool_node*)((char*)cur + pool->block_size);
     }
 
     return pool;

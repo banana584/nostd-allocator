@@ -6,9 +6,9 @@
 
 struct slab {
     alloc_backend backend;
-    arena bootstrap;
+    arena* bootstrap;
     size_t num_pools;
-    pool* pools;
+    pool** pools;
 };
 
 #endif

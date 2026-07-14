@@ -1,11 +1,13 @@
 #include "../include/arena.h"
 #include "impls/arena_impl.h"
 
-arena arena_create(alloc_backend backend, const size_t cap) {
-    arena arena = { .backend = backend, .cap = cap };
-    arena.mem = backend.alloc(cap);
-    if (!arena.mem) {
-        arena.cap = 0;
+arena* arena_create(alloc_backend backend, const size_t cap) {
+    arena* arena = backend.alloc(sizeof(arena));
+    arena->backend = backend;
+    arena->cap = cap;
+    arena->mem = backend.alloc(cap);
+    if (!arena->mem) {
+        arena->cap = 0;
         return arena;
     }
 

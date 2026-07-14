@@ -6,7 +6,7 @@
 
 typedef struct arena arena;
 
-arena arena_create(alloc_backend backend, const size_t cap);
+arena* arena_create(alloc_backend backend, const size_t cap);
 
 void arena_destroy(arena* arena);
 

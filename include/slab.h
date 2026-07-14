@@ -8,7 +8,7 @@
 
 typedef struct slab slab;
 
-slab slab_create(alloc_backend backend, const size_t num_pools, const size_t num_blocks);
+slab* slab_create(alloc_backend backend, const size_t num_pools, const size_t num_blocks);
 
 void slab_destroy(slab* slab);
 

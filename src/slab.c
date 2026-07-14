@@ -1,16 +1,18 @@
 #include "../include/slab.h"
 #include "impls/slab_impl.h"
 
-slab slab_create(alloc_backend backend, const size_t num_pools, const size_t num_blocks) {
-    slab slab = { .backend = backend, .num_pools = num_pools };
-    slab.bootstrap = arena_create(backend, sizeof(pool) * num_pools);
+slab* slab_create(alloc_backend backend, const size_t num_pools, const size_t num_blocks) {
+    slab* slab = backend.alloc(sizeof(slab));
+    slab->backend = backend;
+    slab->num_pools = num_pools;
+    slab->bootstrap = arena_create(backend, sizeof(pool) * num_pools);
 
-    slab.pools = arena_alloc(&slab.bootstrap, sizeof(pool) * num_pools);
+    slab->pools = arena_alloc(slab->bootstrap, sizeof(pool) * num_pools);
 
-    size_t size = 1;
+    size_t size = 1ULL;
     for (size_t i = 0; i < num_pools; i++) {
-        slab.pools[i] = pool_create(backend, size, num_blocks);
-        size <<= 1;
+        slab->pools[i] = pool_create(backend, size, num_blocks);
+        size <<= 1ULL;
     }
 
     return slab;
@@ -23,10 +25,10 @@ void slab_destroy(slab* slab) {
     }
 
     for (size_t i = 0; i < slab->num_pools; i++) {
-        pool_destroy(&slab->pools[i]);
+        pool_destroy(slab->pools[i]);
     }
 
-    arena_destroy(&slab->bootstrap);
+    arena_destroy(slab->bootstrap);
 }
 
 void* slab_alloc(slab* slab, const size_t size) {
@@ -46,7 +48,7 @@ void* slab_alloc(slab* slab, const size_t size) {
         return (void*)((char*)flag + sizeof(_Bool));
     }
 
-    pool* pool = &slab->pools[idx];
+    pool* pool = slab->pools[idx];
     
     size_t* n = (size_t*)pool_alloc(pool);
     _Bool* flag = (_Bool*)((char*)n + sizeof(size_t));
@@ -70,7 +72,7 @@ void slab_free(slab* slab, void* ptr) {
         return;
     }
 
-    pool* pool = &slab->pools[*n];
+    pool* pool = slab->pools[*n];
 
     pool_free(pool, n);
 }
