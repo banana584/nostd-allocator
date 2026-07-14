@@ -1,11 +1,5 @@
 #include "../include/arena.h"
-
-struct arena {
-    alloc_backend backend;
-    void* mem;
-    size_t cap;
-    size_t off;
-};
+#include "impls/arena_impl.h"
 
 arena arena_create(alloc_backend backend, const size_t cap) {
     arena arena = { .backend = backend, .cap = cap };

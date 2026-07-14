@@ -23,7 +23,11 @@ extern const char* alloc_res_names[];
 
 extern _Thread_local alloc_res alloc_err;
 
+const char* alloc_get_errmsg();
+
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
+
+size_t log2_int(size_t x);
 
 #endif

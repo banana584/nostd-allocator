@@ -1,17 +1,5 @@
 #include "../include/pool.h"
-
-typedef struct pool_node {
-    struct pool_node* next;
-    struct pool_node* prev;
-} pool_node;
-
-struct pool {
-    alloc_backend backend;
-    void* mem;
-    size_t block_size;
-    size_t num_blocks;
-    pool_node* head;
-};
+#include "impls/pool_impl.h"
 
 pool pool_create(alloc_backend backend, const size_t block_size, const size_t num_blocks) {
     pool pool = { .backend = backend, .block_size = MIN(block_size, sizeof(pool_node)), .num_blocks = num_blocks };
