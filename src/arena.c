@@ -50,6 +50,23 @@ void* arena_alloc(arena* arena, const size_t size) {
     return ptr;
 }
 
+void arena_free(arena* arena, const size_t size) {
+    if (!arena) {
+        alloc_err = RES_INVALID_ARG;
+        return;
+    }
+
+    arena_impl* alloc = (arena_impl*)arena;
+
+    size_t new_off = alloc->off - size;
+    if (new_off > alloc->cap) {
+        alloc_err = RES_NO_MEM;
+        return;
+    }
+
+    alloc->off = new_off;
+}
+
 void arena_reset(arena* arena) {
     if (!arena) {
         alloc_err = RES_INVALID_ARG;

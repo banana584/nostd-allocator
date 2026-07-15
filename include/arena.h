@@ -14,6 +14,8 @@ void arena_destroy(arena* arena);
 
 void* arena_alloc(arena* arena, const size_t size);
 
+void arena_free(arena* arena, const size_t size);
+
 void arena_reset(arena* arena);
 
 #endif
