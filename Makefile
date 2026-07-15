@@ -7,7 +7,7 @@ LIBFLAGS=rcs
 SOURCE_DIR=src
 BUILD_DIR=build
 
-SOURCES=$(SOURCE_DIR)/memutils.c $(SOURCE_DIR)/arena.c $(SOURCE_DIR)/pool.c $(SOURCE_DIR)/slab.c $(SOURCE_DIR)/buddy.c
+SOURCES=$(SOURCE_DIR)/memutils.c $(SOURCE_DIR)/arena.c $(SOURCE_DIR)/pool.c $(SOURCE_DIR)/slab.c $(SOURCE_DIR)/buddy.c $(SOURCE_DIR)/alloc.c
 OBJ=$(patsubst $(SOURCE_DIR)/%.c,$(BUILD_DIR)/%.o,$(SOURCES))
 
 .PHONY: all clean

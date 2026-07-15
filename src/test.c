@@ -2,6 +2,7 @@
 #include <sys/mman.h>
 #include "../include/buddy.h"
 #include "../include/slab.h"
+#include "../include/alloc.h"
 
 void* alloc_mem(size_t size) {
     return mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
@@ -26,9 +27,9 @@ int main() {
 
     buddy_destroy(&alloc);
 
-    slab slab = slab_create(&backend, 3, 5);
+    slab aSlab = slab_create(&backend, 3, 5);
 
-    int* arr = slab_alloc(&slab, sizeof(int) * 5);
+    int* arr = slab_alloc(&aSlab, sizeof(int) * 5);
 
     for (size_t i = 0; i < 5; i++) {
         arr[i] = i * 2;
@@ -38,9 +39,9 @@ int main() {
         printf("%ld %d\n", i, arr[i]);
     }
 
-    slab_free(&slab, arr);
+    slab_free(&aSlab, arr);
 
-    slab_destroy(&slab);
+    slab_destroy(&aSlab);
 
     pool pool = pool_create(&backend, sizeof(float), 4);
 
@@ -68,6 +69,22 @@ int main() {
     printf("%f %f\n", *d1, *d2);
 
     arena_destroy(&arena);
+
+    slab new = slab_create(&backend, 4, 5);
+    allocator gen = { .ctx = &new, .destroy = (destroy_func)slab_destroy, .alloc = (alloc_func)slab_alloc, .free = (free_func)slab_free };
+
+    int* g1 = allocator_alloc(&gen, sizeof(int));
+    int* g2 = allocator_alloc(&gen, sizeof(int));
+
+    *g1 = 215;
+    *g2 = 1516;
+
+    printf("%d %d\n", *g1, *g2);
+
+    allocator_free(&gen, g1);
+    allocator_free(&gen, g2);
+
+    allocator_destroy(&gen);
 
     return 0;
 }
