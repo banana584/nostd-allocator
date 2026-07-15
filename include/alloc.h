@@ -8,18 +8,22 @@
 
 typedef void (*destroy_func)(void*);
 typedef void* (*alloc_func)(void*, const size_t);
+typedef void* (*realloc_func)(void*, void*, const size_t);
 typedef void (*free_func)(void*, void*);
 
 typedef struct allocator {
     void* ctx;
     destroy_func destroy;
     alloc_func alloc;
+    realloc_func realloc;
     free_func free;
 } allocator;
 
 void allocator_destroy(allocator* alloc);
 
 void* allocator_alloc(allocator* alloc, const size_t size);
+
+void* allocator_realloc(allocator* alloc, void* ptr, const size_t size);
 
 void allocator_free(allocator* alloc, void* ptr);
 

@@ -63,6 +63,30 @@ void* slab_alloc(slab* slab, const size_t size) {
     return (void*)((char*)flag + sizeof(_Bool));
 }
 
+void* slab_realloc(slab* slab, void* ptr, const size_t size) {
+    if (!slab || !ptr) {
+        alloc_err = RES_INVALID_ARG;
+        return NULL;
+    }
+
+    slab_impl* alloc = (slab_impl*)slab;
+
+    size_t* old = (size_t*)((char*)ptr - sizeof(_Bool) - sizeof(size_t));
+
+    arena scratch = arena_create(alloc->backend, *old);
+    void* mem = arena_alloc(&scratch, *old);
+    memcpy(mem, ptr, *old);
+
+    slab_free(slab, ptr);
+
+    void* new = slab_alloc(slab, size);
+    memcpy(new, mem, MIN(*old, size));
+
+    arena_destroy(&scratch);
+
+    return new;
+}
+
 void slab_free(slab* slab, void* ptr) {
     if (!slab || !ptr) {
         alloc_err = RES_INVALID_ARG;

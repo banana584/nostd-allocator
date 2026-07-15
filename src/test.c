@@ -39,6 +39,12 @@ int main() {
         printf("%ld %d\n", i, arr[i]);
     }
 
+    arr = slab_realloc(&aSlab, arr, sizeof(int) * 6);
+
+    arr[5] = 5 * 2;
+
+    printf("%d %d\n", 5, arr[5]);
+
     slab_free(&aSlab, arr);
 
     slab_destroy(&aSlab);
@@ -71,7 +77,7 @@ int main() {
     arena_destroy(&arena);
 
     slab new = slab_create(&backend, 4, 5);
-    allocator gen = { .ctx = &new, .destroy = (destroy_func)slab_destroy, .alloc = (alloc_func)slab_alloc, .free = (free_func)slab_free };
+    allocator gen = { .ctx = &new, .destroy = (destroy_func)slab_destroy, .alloc = (alloc_func)slab_alloc, .realloc = (realloc_func)slab_realloc, .free = (free_func)slab_free };
 
     int* g1 = allocator_alloc(&gen, sizeof(int));
     int* g2 = allocator_alloc(&gen, sizeof(int));

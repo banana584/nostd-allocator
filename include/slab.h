@@ -16,6 +16,8 @@ void slab_destroy(slab* slab);
 
 void* slab_alloc(slab* slab, const size_t size);
 
+void* slab_realloc(slab* slab, void* ptr, const size_t size);
+
 void slab_free(slab* slab, void* ptr);
 
 #endif

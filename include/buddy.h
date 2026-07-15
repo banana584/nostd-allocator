@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 #include "memutils.h"
+#include "arena.h"
 
 typedef __UINTPTR_TYPE__ uintptr_t;
 
@@ -15,6 +16,8 @@ buddy buddy_create(alloc_backend* backend, const size_t size);
 void buddy_destroy(buddy* buddy);
 
 void* buddy_alloc(buddy* buddy, const size_t size);
+
+void* buddy_realloc(buddy* buddy, void* ptr, const size_t size);
 
 void buddy_free(buddy* buddy, void* ptr);
 

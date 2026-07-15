@@ -103,6 +103,31 @@ void* buddy_alloc(buddy* buddy, const size_t size) {
     return (void*)((char*)cur + sizeof(size_t));
 }
 
+void* buddy_realloc(buddy* buddy, void* ptr, const size_t size) {
+    if (!buddy || !ptr) {
+        alloc_err = RES_INVALID_ARG;
+        return NULL;
+    }
+
+    buddy_impl* alloc = (buddy_impl*)buddy;
+
+    size_t* old = (size_t*)((char*)ptr - sizeof(size_t));
+    *old = 1ULL << *old;
+
+    arena scratch = arena_create(alloc->backend, *old);
+    void* mem = arena_alloc(&scratch, *old);
+    memcpy(mem, ptr, *old);
+
+    buddy_free(buddy, ptr);
+
+    void* new = buddy_alloc(buddy, size);
+    memcpy(new, mem, MIN(*old, size));
+
+    arena_destroy(&scratch);
+
+    return new;
+}
+
 void buddy_free(buddy* buddy, void* ptr) {
     if (!buddy || !ptr) {
         alloc_err = RES_INVALID_ARG;
