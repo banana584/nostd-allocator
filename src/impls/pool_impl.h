@@ -8,12 +8,12 @@ typedef struct pool_node {
     struct pool_node* prev;
 } pool_node;
 
-struct pool {
-    alloc_backend backend;
+typedef struct pool_impl {
+    alloc_backend* backend;
     void* mem;
     size_t block_size;
     size_t num_blocks;
     pool_node* head;
-};
+} pool_impl;
 
 #endif

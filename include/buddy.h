@@ -6,9 +6,11 @@
 
 typedef __UINTPTR_TYPE__ uintptr_t;
 
-typedef struct buddy buddy;
+typedef struct buddy {
+    unsigned char mem[40UL];
+} buddy;
 
-buddy* buddy_create(alloc_backend backend, const size_t size);
+buddy buddy_create(alloc_backend* backend, const size_t size);
 
 void buddy_destroy(buddy* buddy);
 

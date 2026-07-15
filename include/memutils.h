@@ -30,4 +30,6 @@ const char* alloc_get_errmsg();
 
 size_t log2_int(size_t x);
 
+void* memcpy(void* restrict dest, const void* restrict src, size_t n);
+
 #endif

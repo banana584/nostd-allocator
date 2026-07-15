@@ -6,9 +6,11 @@
 #include "arena.h"
 #include "pool.h"
 
-typedef struct slab slab;
+typedef struct slab {
+    unsigned char mem[56UL];
+} slab;
 
-slab* slab_create(alloc_backend backend, const size_t num_pools, const size_t num_blocks);
+slab slab_create(alloc_backend* backend, const size_t num_pools, const size_t num_blocks);
 
 void slab_destroy(slab* slab);
 

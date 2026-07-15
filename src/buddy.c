@@ -18,25 +18,26 @@ static size_t round_up(size_t n) {
     return n;
 }
 
-buddy* buddy_create(alloc_backend backend, const size_t size) {
-    buddy* buddy = backend.alloc(sizeof(buddy));
-    buddy->backend = backend;
-    buddy->max_size = size;
-    buddy->max_order = log2_int(buddy->max_size);
-    buddy->mem = backend.alloc(buddy->max_size);
-    if (!buddy->mem) {
-        buddy->max_size = 0;
-        buddy->max_order = 0;
-        return buddy;
+buddy buddy_create(alloc_backend* backend, const size_t size) {
+    buddy_impl alloc = { .backend = backend, .max_size = round_up(size), .max_order = log2_int(round_up(size)) };
+    alloc.mem = backend->alloc(alloc.max_size);
+    if (!alloc.mem) {
+        alloc.max_size = 0;
+        alloc.max_order = 0;
+        goto end;
     }
 
-    buddy_node* cur = (buddy_node*)buddy->mem;
-    cur->order = buddy->max_order;
+    buddy_node* cur = (buddy_node*)alloc.mem;
+    cur->order = alloc.max_order;
     cur->free = 1;
     cur->next = NULL;
     cur->prev = NULL;
 
-    buddy->head = cur;
+    alloc.head = cur;
+
+    end: ;
+    buddy buddy;
+    memcpy(&buddy.mem, &alloc, sizeof(alloc));
 
     return buddy;
 }
@@ -47,15 +48,15 @@ void buddy_destroy(buddy* buddy) {
         return;
     }
 
-    if (buddy->mem) {
-        buddy->backend.free(buddy->mem, buddy->max_size);
-        buddy->mem = NULL;
-        buddy->head = NULL;
-        buddy->max_order = 0;
-        buddy->max_size = 0;
-    }
+    buddy_impl* alloc = (buddy_impl*)buddy;
 
-    buddy->backend.free(buddy, sizeof(buddy));
+    if (alloc->mem) {
+        alloc->backend->free(alloc->mem, alloc->max_size);
+        alloc->mem = NULL;
+        alloc->head = NULL;
+        alloc->max_order = 0;
+        alloc->max_size = 0;
+    }
 }
 
 void* buddy_alloc(buddy* buddy, const size_t size) {
@@ -64,9 +65,11 @@ void* buddy_alloc(buddy* buddy, const size_t size) {
         return NULL;
     }
 
+    buddy_impl* alloc = (buddy_impl*)buddy;
+
     size_t n = log2_int(round_up(size));
 
-    buddy_node* cur = buddy->head;
+    buddy_node* cur = alloc->head;
     while (cur->order - 1 >= n) {
         if (!cur->free && cur->order > n) continue;
 
@@ -82,7 +85,7 @@ void* buddy_alloc(buddy* buddy, const size_t size) {
         other->free = 1;
     }
 
-    buddy->head = cur->next;
+    alloc->head = cur->next;
 
     if (cur->prev) {
         cur->prev->next = cur->next;
@@ -105,6 +108,8 @@ void buddy_free(buddy* buddy, void* ptr) {
         alloc_err = RES_INVALID_ARG;
         return;
     }
+
+    buddy_impl* alloc = (buddy_impl*)buddy;
 
     size_t* order = (size_t*)((char*)ptr - sizeof(size_t));
     buddy_node* cur = (buddy_node*)order;
@@ -147,8 +152,8 @@ void buddy_free(buddy* buddy, void* ptr) {
             cur->next = next;
             cur->prev = prev;
 
-            if (!buddy->head) {
-                buddy->head = cur;
+            if (!alloc->head) {
+                alloc->head = cur;
                 cur->prev = NULL;
             }
         } else {

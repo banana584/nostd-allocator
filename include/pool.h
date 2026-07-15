@@ -4,9 +4,11 @@
 #include <stddef.h>
 #include "memutils.h"
 
-typedef struct pool pool;
+typedef struct pool {
+    unsigned char mem[40UL];
+} pool;
 
-pool* pool_create(alloc_backend backend, const size_t block_size, const size_t num_blocks);
+pool pool_create(alloc_backend* backend, const size_t block_size, const size_t num_blocks);
 
 void pool_destroy(pool* pool);
 

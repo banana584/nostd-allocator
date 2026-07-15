@@ -1,15 +1,15 @@
 #include "../include/arena.h"
 #include "impls/arena_impl.h"
 
-arena* arena_create(alloc_backend backend, const size_t cap) {
-    arena* arena = backend.alloc(sizeof(arena));
-    arena->backend = backend;
-    arena->cap = cap;
-    arena->mem = backend.alloc(cap);
-    if (!arena->mem) {
-        arena->cap = 0;
-        return arena;
+arena arena_create(alloc_backend* backend, const size_t cap) {
+    arena_impl alloc = { .backend = backend, .cap = cap };
+    alloc.mem = backend->alloc(cap);
+    if (!alloc.mem) {
+        alloc.cap = 0;
     }
+
+    arena arena;
+    memcpy(&arena.mem, &alloc, sizeof(alloc));
 
     return arena;
 }
@@ -20,13 +20,15 @@ void arena_destroy(arena* arena) {
         return;
     }
 
-    if (arena->mem) {
-        arena->backend.free(arena->mem, arena->cap);
-        arena->mem = NULL;
+    arena_impl* alloc = (arena_impl*)arena;
+
+    if (alloc->mem) {
+        alloc->backend->free(alloc->mem, alloc->cap);
+        alloc->mem = NULL;
     }
 
-    arena->cap = 0;
-    arena->off = 0;
+    alloc->cap = 0;
+    alloc->off = 0;
 }
 
 void* arena_alloc(arena* arena, const size_t size) {
@@ -35,14 +37,16 @@ void* arena_alloc(arena* arena, const size_t size) {
         return NULL;
     }
 
-    size_t new_off = arena->off + size;
-    if (new_off > arena->cap) {
+    arena_impl* alloc = (arena_impl*)arena;
+
+    size_t new_off = alloc->off + size;
+    if (new_off > alloc->cap) {
         alloc_err = RES_NO_MEM;
         return NULL;
     }
 
-    void* ptr = (void*)((char*)arena->mem + arena->off);
-    arena->off = new_off;
+    void* ptr = (void*)((char*)alloc->mem + alloc->off);
+    alloc->off = new_off;
     return ptr;
 }
 
@@ -52,5 +56,7 @@ void arena_reset(arena* arena) {
         return;
     }
 
-    arena->off = 0;
+    arena_impl* alloc = (arena_impl*)arena;
+
+    alloc->off = 0;
 }

@@ -3,11 +3,11 @@
 
 #include "../../include/arena.h"
 
-struct arena {
-    alloc_backend backend;
+typedef struct arena_impl {
+    alloc_backend* backend;
     void* mem;
     size_t cap;
     size_t off;
-};
+} arena_impl;
 
 #endif

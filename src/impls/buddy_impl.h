@@ -10,12 +10,12 @@ typedef struct buddy_node {
     struct buddy_node* prev;
 } buddy_node;
 
-struct buddy {
-    alloc_backend backend;
+typedef struct buddy_impl {
+    alloc_backend* backend;
     size_t max_order;
     size_t max_size;
     void* mem;
     buddy_node* head;
-};
+} buddy_impl;
 
 #endif

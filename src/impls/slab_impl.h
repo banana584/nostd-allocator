@@ -4,11 +4,11 @@
 #include "arena_impl.h"
 #include "pool_impl.h"
 
-struct slab {
-    alloc_backend backend;
-    arena* bootstrap;
+typedef struct slab_impl {
+    alloc_backend* backend;
+    arena bootstrap;
     size_t num_pools;
-    pool** pools;
-};
+    pool* pools;
+} slab_impl;
 
 #endif
