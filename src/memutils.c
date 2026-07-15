@@ -4,7 +4,7 @@
 const char* alloc_res_names[] = { ALLOC_RES_LIST(X) };
 #undef X
 
-_Thread_local alloc_res alloc_err = RES_SUCCESS;
+alloc_res alloc_err = RES_SUCCESS;
 
 const char* alloc_get_errmsg() {
     return alloc_res_names[alloc_err];

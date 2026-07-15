@@ -21,7 +21,7 @@ typedef enum alloc_res {
 
 extern const char* alloc_res_names[];
 
-extern _Thread_local alloc_res alloc_err;
+extern alloc_res alloc_err;
 
 const char* alloc_get_errmsg();
 

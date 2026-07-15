@@ -1,7 +1,7 @@
 CC=gcc
 LIB=ar
 
-CFLAGS=-std=c11 -Wall -Werror -Wextra -Wpedantic -ffreestanding -fshort-wchar -mno-red-zone -fno-stack-protector -Iinclude -g
+CFLAGS=-std=c99 -Wall -Werror -Wextra -Wpedantic -ffreestanding -fshort-wchar -mno-red-zone -fno-stack-protector -Iinclude
 LIBFLAGS=rcs
 
 SOURCE_DIR=src
