@@ -68,14 +68,18 @@ void* buddy_alloc(buddy* buddy, const size_t size) {
     buddy_impl* alloc = (buddy_impl*)buddy;
 
     size_t n = log2_int(round_up(size));
+    if (n == 0) n = 1;
 
     buddy_node* cur = alloc->head;
     while (cur->order - 1 >= n) {
-        if (!cur->free && cur->order > n) continue;
+        if (!cur->free && cur->order > n) {
+            continue;
+            ////cur = cur->next;
+        }
 
         cur->order--;
+        buddy_node* other = (buddy_node*)((char*)cur + MAX(1ULL << cur->order, sizeof(buddy_node)));
 
-        buddy_node* other = (buddy_node*)((char*)cur + sizeof(buddy_node) + (1ULL << cur->order));
         other->next = cur->next;
         if (cur->next) cur->next->prev = other;
         cur->next = other;
@@ -87,20 +91,9 @@ void* buddy_alloc(buddy* buddy, const size_t size) {
 
     alloc->head = cur->next;
 
-    if (cur->prev) {
-        cur->prev->next = cur->next;
-    }
-    if (cur->next) {
-        cur->next->prev = cur->prev;
-    }
-    cur->prev = NULL;
-    cur->next = NULL;
-
     cur->free = 0;
 
-    size_t* order = (size_t*)cur;
-    *order = n;
-    return (void*)((char*)cur + sizeof(size_t));
+    return (void*)((char*)cur + sizeof(buddy_node));
 }
 
 void* buddy_realloc(buddy* buddy, void* ptr, const size_t size) {
@@ -136,18 +129,14 @@ void buddy_free(buddy* buddy, void* ptr) {
 
     buddy_impl* alloc = (buddy_impl*)buddy;
 
-    size_t* order = (size_t*)((char*)ptr - sizeof(size_t));
-    buddy_node* cur = (buddy_node*)order;
-    cur->order = *order;
+    buddy_node* cur = (buddy_node*)((char*)ptr - sizeof(buddy_node));
     cur->free = 1;
-    cur->next = NULL;
-    cur->prev = NULL;
 
     while (1) {
-        uintptr_t off = (uintptr_t)cur - (uintptr_t)buddy->mem;
+        uintptr_t off = (uintptr_t)cur - (uintptr_t)alloc->mem;
 
         uintptr_t buddy_off = off ^ (1ULL << cur->order);
-        buddy_node* other = (buddy_node*)((char*)buddy->mem + buddy_off);
+        buddy_node* other = (buddy_node*)((char*)alloc->mem + buddy_off);
 
         if (cur->order != other->order) break;
 
@@ -161,7 +150,7 @@ void buddy_free(buddy* buddy, void* ptr) {
                 cur->next->prev = prev;
             }
 
-            buddy_node* left = cur < other ? cur : other;
+            buddy_node* left  = cur < other ? cur : other;
             buddy_node* right = cur < other ? other : cur;
 
             left->order++;
