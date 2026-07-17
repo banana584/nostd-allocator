@@ -69,8 +69,6 @@ void* slab_realloc(slab* slab, void* ptr, const size_t size) {
         return NULL;
     }
 
-    slab_impl* alloc = (slab_impl*)slab;
-
     size_t* old = (size_t*)((char*)ptr - sizeof(_Bool) - sizeof(size_t));
 
     void* new = slab_alloc(slab, size);

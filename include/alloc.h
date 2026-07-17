@@ -19,12 +19,12 @@ typedef struct allocator {
     free_func free;
 } allocator;
 
-void allocator_destroy(allocator* alloc);
+#define allocator_destroy(alloc) ((alloc)->destroy((alloc)->ctx))
 
-void* allocator_alloc(allocator* alloc, const size_t size);
+#define allocator_alloc(alloc, size) ((alloc)->alloc((alloc)->ctx, size))
 
-void* allocator_realloc(allocator* alloc, void* ptr, const size_t size);
+#define allocator_realloc(alloc, ptr, size) ((alloc)->realloc((alloc)->ctx, ptr, size))
 
-void allocator_free(allocator* alloc, void* ptr);
+#define allocator_free(alloc, ptr) ((alloc)->free((alloc)->ctx, ptr))
 
 #endif
