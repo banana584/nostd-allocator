@@ -1,6 +1,23 @@
 #include "../include/slab.h"
 #include "impls/slab_impl.h"
 
+static size_t round_up(size_t n) {
+    if (n == 0) return 0;
+
+    n--;
+    n |= n >> 1;
+    n |= n >> 2;
+    n |= n >> 4;
+    n |= n >> 8;
+    n |= n >> 16;
+    #if __SIZE_WIDTH__ == 64
+    n |= n >> 32;
+    #endif
+    n++;
+
+    return n;
+}
+
 slab slab_create(alloc_backend* backend, const size_t num_pools, const size_t num_blocks) {
     slab_impl alloc = { .backend = backend, .num_pools = num_pools };
     alloc.bootstrap = arena_create(backend, sizeof(pool) * num_pools);
@@ -42,7 +59,8 @@ void* slab_alloc(slab* slab, const size_t size) {
 
     slab_impl* alloc = (slab_impl*)slab;
 
-    size_t idx = log2_int(size);
+    size_t rounded = round_up(size);
+    size_t idx = log2_int(rounded);
     
     if (idx > alloc->num_pools) {
         size_t* n = (size_t*)alloc->backend->alloc(size + sizeof(size_t) + sizeof(_Bool));
